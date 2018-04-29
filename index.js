@@ -13,32 +13,31 @@ window.onload = function() {
     return s    
   }
   const createMsg = (data) => {               // 添加聊天信息
-    const node = this.document.createElement('li')
-    node.innerText = `${data.userName} : ${data.msg}`
+    const node = document.createElement('li')
+    const nameSpan = document.createElement('span')
+    const msgSpan = document.createElement('span')
+
+    nameSpan.innerText = data.userName
+    nameSpan.style.color = data.nameColor
+    msgSpan.innerText = ' : ' + data.msg
+
+    node.appendChild(nameSpan)
+    node.appendChild(msgSpan)
     $('.messages').appendChild(node)
   }
-  const randomNum = () => {                   // 生成 0~11 的随机数
-    return Math.floor(Math.random()*12)
+  const createTip = (msg) => {                // 创建提示信息
+    const node = this.document.createElement('li')
+    node.innerText = msg
+    node.style.color = 'gray';
+    node.style.textAlign = 'center'
+    $('.messages').appendChild(node)
   }
 
-
-  const COLORS = [
-    '#e21400', '#91580f', '#f8a700', '#f78b00',
-    '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
-    '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
-  ];
   let userName = ''
-  const socket = io('http://localhost:8081')
+  const socket = io()
 
 
-
-  const enterChat = () => {                             // 进入聊天页面
-    socket.emit('login', {userName})
-    $('.chat.page').style.display = 'block'
-    $('.login.page').style.display = 'none'
-  }
-
-  document.addEventListener('keydown', (event)=>{       // 输入昵称后
+  $('.usernameInput').addEventListener('keydown', (event)=>{       // 输入昵称后
     const content = $('.usernameInput').value
 
     if(event.key === 'Enter' && notEmpty(content)) {
@@ -47,6 +46,15 @@ window.onload = function() {
     }
   })
 
+  const enterChat = () => {                             // 进入聊天页面
+    createTip('Welcome to Socket.IO Chat')
+
+    socket.emit('login', {userName})
+    $('.chat.page').style.display = 'block'
+    $('.inputMessage').focus()
+    $('.login.page').style.display = 'none'
+  }
+
   $('.inputMessage').addEventListener('keydown', (event)=>{     // 发送消息
     let content = $('.inputMessage').value
 
@@ -54,12 +62,20 @@ window.onload = function() {
       content = filterSpace(content)
       socket.emit('sendMsg', {userName, msg: content})
       $('.inputMessage').value = ''
-      createMsg({userName, msg: content})
     }
   })
   
   socket.on('broadcast', (data) => {                            // 广播消息
     createMsg(data)
   })
+  socket.on('broadcast to self', (data) => {                    // 广播给自己
+    createMsg(data)
+  })
 
+  socket.on('user left', ({userName}) => {
+    createTip(`${userName} left`)
+  })
+  socket.on('user joined', ({userName}) => {
+    createTip(`${userName} joined`)
+  })
 }
