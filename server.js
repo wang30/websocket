@@ -20,6 +20,7 @@ const COLORS = [
   '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
   '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
 ];
+let participants = 0;
 
 const ws = io(server)
 ws.on('connection', socket => {
@@ -28,7 +29,10 @@ ws.on('connection', socket => {
 
   socket.on('login', (data)=>{                          // 用户进入
     userName = data.userName
-    socket.broadcast.emit('user joined', data)
+    participants++
+    console.log(participants)
+    socket.broadcast.emit('user joined', {userName, participants})
+    socket.emit('participants number', participants)
   })
   socket.on('sendMsg', (data) => {                      // 发送消息
     Object.assign(data, {nameColor})
@@ -36,6 +40,8 @@ ws.on('connection', socket => {
     socket.emit('broadcast to self', data)
   })
   socket.on('disconnect', () => {                       // 连接断开
-    socket.broadcast.emit('user left', {userName})
+    if(participants > 0)
+      participants--
+    socket.broadcast.emit('user left', {userName, participants})
   })
 })

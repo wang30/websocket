@@ -72,10 +72,15 @@ window.onload = function() {
     createMsg(data)
   })
 
-  socket.on('user left', ({userName}) => {
-    createTip(`${userName} left`)
+  socket.on('participants number', (num) => {
+    createTip(`there are ${num} participants`)
   })
-  socket.on('user joined', ({userName}) => {
+  socket.on('user left', ({userName, participants}) => {        // 用户离开
+    createTip(`${userName} left`)
+    createTip(`there are ${participants} participants`)
+  })
+  socket.on('user joined', ({userName, participants}) => {                     // 用户进入
     createTip(`${userName} joined`)
+    createTip(`there are ${participants} participants`)
   })
 }
