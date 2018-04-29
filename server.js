@@ -30,7 +30,6 @@ ws.on('connection', socket => {
   socket.on('login', (data)=>{                          // 用户进入
     userName = data.userName
     participants++
-    console.log(participants)
     socket.broadcast.emit('user joined', {userName, participants})
     socket.emit('participants number', participants)
   })
